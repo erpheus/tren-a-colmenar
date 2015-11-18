@@ -22,6 +22,11 @@
 		</li>
 	</ul>
 
+	<h1>Salidas</h1>
+	<p ng-if="salidas != null"><span class="time" ng-repeat="time in salidas">{{time}}</span></p>
+	<p ng-if="salidas == null">cargando...</p> 
+
+
 	<script type="text/javascript">
 
 		var app = angular.module('webQuickCercanias', []);
@@ -38,6 +43,7 @@
 			]
 
 			$scope.timesFromStation = {}
+			$scope.salidas = null
 			for (var i = 0; i < $scope.stations.length; i++) {
 				var station = $scope.stations[i];
 				$scope.timesFromStation[station.name] = null;
@@ -48,8 +54,18 @@
 					var dates = response.data.trips.map(function(trip){ return new Date(trip.departure) })
 					var now = new Date();
 					var futureTrips = dates.filter(function(date){return date >= now});
-				    $scope.timesFromStation[station.name] = futureTrips.slice(0, 3).map(function(time){return time.getHours()+':'+(time.getMinutes() < 10 ? '0'+time.getMinutes() : time.getMinutes())});
+				    $scope.timesFromStation[station.name] = futureTrips.slice(0, 6).map(function(time){return time.getHours()+':'+(time.getMinutes() < 10 ? '0'+time.getMinutes() : time.getMinutes())});
 				  }}(station), function errorCallback(response) {});
+
+				$http({
+				  method: 'GET',
+				  url: baseUrl + '/timetable/10/17005/17009/today'
+				}).then(function successCallback(response) {
+					var dates = response.data.trips.map(function(trip){ return new Date(trip.departure) })
+					var now = new Date();
+					var futureTrips = dates.filter(function(date){return date >= now});
+				    $scope.salidas = futureTrips.slice(0, 6).map(function(time){return time.getHours()+':'+(time.getMinutes() < 10 ? '0'+time.getMinutes() : time.getMinutes())});
+				  }, function errorCallback(response) {});
 			};
 		});
 	</script>
