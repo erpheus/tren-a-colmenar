@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html ng-app="webQuickCercanias">
+<head>
+	<title>¿Cuando pasa el tren a Colmenar?</title>
+	<meta charset="utf-8"/>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
+	<style>
+		.time {
+			margin-left: 10px;
+			margin-right: 10px;
+		}
+	</style>
+</head>
+<body ng-controller="quickCercaniasController">
+	<h1>¿Cuando pasa el tren a Colmenar?</h1>
+
+	<ul>
+		<li ng-repeat="station in stations">
+			<h3>desde {{station.name}}</h3>
+			<p ng-if="timesFromStation[station.name] != null"><span class="time" ng-repeat="time in timesFromStation[station.name]">{{time}}</span></p>
+			<p ng-if="timesFromStation[station.name] == null">cargando...</p> 
+		</li>
+	</ul>
+
+	<script type="text/javascript">
+
+		var app = angular.module('webQuickCercanias', []);
+		var baseUrl = 'http://barbados.servebeer.com:4242';
+		//baseUrl = 'http://192.168.1.106:8080';
+
+		app.controller('quickCercaniasController', function($scope, $http) {
+
+			$scope.stations = [
+				{name: 'Nuevos Ministerios', id: '18002'},
+				{name: 'Cantoblanco Universidad', id: '17009'},
+				{name: 'Atocha', id: '18000'},
+				{name: 'Sol', id: '18101'}
+			]
+
+			$scope.timesFromStation = {}
+			for (var i = 0; i < $scope.stations.length; i++) {
+				var station = $scope.stations[i];
+				$scope.timesFromStation[station.name] = null;
+				$http({
+				  method: 'GET',
+				  url: baseUrl + '/timetable/10/'+station.id+'/17005/today'
+				}).then(function(station){ return function successCallback(response) {
+					var dates = response.data.trips.map(function(trip){ return new Date(trip.departure) })
+					var now = new Date();
+					var futureTrips = dates.filter(function(date){return date >= now});
+				    $scope.timesFromStation[station.name] = futureTrips.slice(0, 3).map(function(time){return time.getHours()+':'+(time.getMinutes() < 10 ? '0'+time.getMinutes() : time.getMinutes())});
+				  }}(station), function errorCallback(response) {});
+			};
+		});
+	</script>
+</body>
+</html>
