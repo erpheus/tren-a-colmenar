@@ -30,8 +30,7 @@
 	<script type="text/javascript">
 
 		var app = angular.module('webQuickCercanias', []);
-		var baseUrl = 'http://barbados.servebeer.com:4242';
-		//baseUrl = 'http://192.168.1.106:8080';
+		var baseUrls = ['http://barbados.servebeer.com:4242', 'http://192.168.1.106:8080'];
 
 		app.controller('quickCercaniasController', function($scope, $http) {
 
@@ -47,25 +46,29 @@
 			for (var i = 0; i < $scope.stations.length; i++) {
 				var station = $scope.stations[i];
 				$scope.timesFromStation[station.name] = null;
-				$http({
-				  method: 'GET',
-				  url: baseUrl + '/timetable/10/'+station.id+'/17005/today'
-				}).then(function(station){ return function successCallback(response) {
-					var dates = response.data.trips.map(function(trip){ return new Date(trip.departure) })
-					var now = new Date();
-					var futureTrips = dates.filter(function(date){return date >= now});
-				    $scope.timesFromStation[station.name] = futureTrips.slice(0, 6).map(function(time){return time.getHours()+':'+(time.getMinutes() < 10 ? '0'+time.getMinutes() : time.getMinutes())});
-				  }}(station), function errorCallback(response) {});
-
-				$http({
-				  method: 'GET',
-				  url: baseUrl + '/timetable/10/17005/17009/today'
-				}).then(function successCallback(response) {
-					var dates = response.data.trips.map(function(trip){ return new Date(trip.departure) })
-					var now = new Date();
-					var futureTrips = dates.filter(function(date){return date >= now});
-				    $scope.salidas = futureTrips.slice(0, 6).map(function(time){return time.getHours()+':'+(time.getMinutes() < 10 ? '0'+time.getMinutes() : time.getMinutes())});
-				  }, function errorCallback(response) {});
+				for (var j = 0; j < baseUrls.length; j++){
+				
+					$http({
+					  method: 'GET',
+					  url: baseUrls[j] + '/timetable/10/'+station.id+'/17005/today'
+					}).then(function(station){ return function successCallback(response) {
+						var dates = response.data.trips.map(function(trip){ return new Date(trip.departure) })
+						var now = new Date();
+						var futureTrips = dates.filter(function(date){return date >= now});
+					    $scope.timesFromStation[station.name] = futureTrips.slice(0, 6).map(function(time){return time.getHours()+':'+(time.getMinutes() < 10 ? '0'+time.getMinutes() : time.getMinutes())});
+					  }}(station), function errorCallback(response) {});
+	
+					$http({
+					  method: 'GET',
+					  url: baseUrls[j] + '/timetable/10/17005/17009/today'
+					}).then(function successCallback(response) {
+						var dates = response.data.trips.map(function(trip){ return new Date(trip.departure) })
+						var now = new Date();
+						var futureTrips = dates.filter(function(date){return date >= now});
+					    $scope.salidas = futureTrips.slice(0, 6).map(function(time){return time.getHours()+':'+(time.getMinutes() < 10 ? '0'+time.getMinutes() : time.getMinutes())});
+					  }, function errorCallback(response) {});
+					  
+				};
 			};
 		});
 	</script>
